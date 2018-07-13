@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	httptrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
+	muxtrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gorilla/mux"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 func handleHi(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +28,9 @@ func handleHi(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	mux := httptrace.NewServeMux(httptrace.WithServiceName("test-app"))
+	tracer.Start()
+	defer tracer.Stop()
+	mux := muxtrace.NewRouter(muxtrace.WithServiceName("test-app"))
 	mux.HandleFunc("/hi", handleHi)
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
